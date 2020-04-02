@@ -80,7 +80,7 @@ func (self *Xrm) Execute() bool {
 		}
 		for i := 0; i < len(self.filePaths); i++ {
 			for j := 0; j < len(xrmLan.fileNameExts); j++ {
-				files, err := WalkDir(self.filePaths[i], xrmLan.fileNameExts[i])
+				files, err := WalkDir(self.filePaths[i], xrmLan.fileNameExts)
 				if err != nil {
 					log.Println("[error]", err)
 					continue
@@ -125,9 +125,8 @@ func CheckIgnoreFileName(fileName string, xrmLan *XrmLan) bool {
 	return ignore
 }
 
-func WalkDir(dirPth, suffix string) (files []string, err error) {
+func WalkDir(dirPth string, suffixs []string) (files []string, err error) {
 	files = make([]string, 0, 30)
-	suffix = strings.ToUpper(suffix)
 	err = filepath.Walk(dirPth, func(filename string, fi os.FileInfo, err error) error {
 		if err != nil {
 			log.Panic(err)
@@ -135,8 +134,10 @@ func WalkDir(dirPth, suffix string) (files []string, err error) {
 		if fi.IsDir() {
 			return nil
 		}
-		if strings.HasSuffix(strings.ToUpper(fi.Name()), suffix) {
-			files = append(files, filename)
+		for i := 0; i < len(suffixs); i++ {
+			if strings.HasSuffix(strings.ToLower(fi.Name()), suffixs[i]) {
+				files = append(files, filename)
+			}
 		}
 		return nil
 	})
